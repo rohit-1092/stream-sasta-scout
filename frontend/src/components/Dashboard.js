@@ -5,7 +5,7 @@ import Header from "./Header";
 const Dashboard = ({ userEmail, onLogout }) => {
   const [movies, setMovies] = useState([]);
   const [trailerKey, setTrailerKey] = useState(null);
-  const API_KEY = "e8bb5361b5fb9f3fd95d776ecb199bb5";
+  const API_KEY = process.env.REACT_APP_TMDB_API_KEY || "e8bb5361b5fb9f3fd95d776ecb199bb5";
 
   const fetchMovies = async (q = "") => {
     const url = q ? `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${q}` : `https://api.themoviedb.org/3/movie/now_playing?api_key=${API_KEY}&region=IN`;
