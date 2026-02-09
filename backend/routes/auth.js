@@ -6,12 +6,12 @@ const nodemailer = require('nodemailer');
 const User = require('../models/User'); // Ensure this path is correct
 
 // --- Nodemailer Setup ---
-// --- IS SECTION KO BADLEIN ---
+// --- Nodemailer Setup (Environment Variables ke saath) ---
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER, // Render ke variables use honge
-    pass: process.env.EMAIL_PASS  // Yahan naya App Password (uhdpydhjqbcmciny) load hoga
+    user: process.env.EMAIL_USER, // Render dashboard se Jayindian10@gmail.com uthayega
+    pass: process.env.EMAIL_PASS  // Render dashboard se uhdpydhjqbcmciny uthayega
   }
 });
 
