@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER, // Render dashboard se Jayindian10@gmail.com uthayega
-    pass: process.env.EMAIL_PASS  // Render dashboard se uhdpydhjqbcmciny uthayega
+    pass: process.env.EMAIL_PASS // Render dashboard se uhdpydhjqbcmciny uthayega
   }
 });
 
