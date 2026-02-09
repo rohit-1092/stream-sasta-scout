@@ -24,7 +24,7 @@ const Login = ({ onLoginSuccess, onNavigateToRegister, onNavigateToForgot }) => 
     e.preventDefault();
     try {
       // Backend route /verify-otp par request
-      const res = await axios.post('http://localhost:5000/api/auth/verify-otp', { email, otp });
+     const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/verify-otp`, { email, otp });
       alert("Login Safal rha!");
       onLoginSuccess({ email }); // User ko dashboard par bhejein
     } catch (err) {
