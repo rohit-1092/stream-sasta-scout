@@ -8,7 +8,9 @@ const ForgotPassword = ({ onNavigateToLogin }) => {
   const sendOtp = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/auth/send-otp', { email: data.email });
+     // Purana: await axios.post('http://localhost:5000/api/auth/send-otp', ...);
+// Naya Sahi Code:
+await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/send-otp`, { email: data.email });
       alert("OTP sent to your email!");
       setStep(2);
     } catch (err) { alert("Error sending OTP"); }
@@ -17,7 +19,9 @@ const ForgotPassword = ({ onNavigateToLogin }) => {
   const handleReset = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/auth/reset-password', data);
+      // Purana: await axios.post('http://localhost:5000/api/auth/reset-password', data);
+// Naya Sahi Code:
+await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/reset-password`, data);
       alert("Password reset successful!");
       onNavigateToLogin();
     } catch (err) { alert("Reset failed!"); }

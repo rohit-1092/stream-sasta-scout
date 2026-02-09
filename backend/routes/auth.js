@@ -6,12 +6,13 @@ const nodemailer = require('nodemailer');
 const User = require('../models/User'); // Ensure this path is correct
 
 // --- Nodemailer Setup ---
+// --- IS SECTION KO BADLEIN ---
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'jayindian10@gmail.com', // Aapka Gmail
-        pass: 'lcnhmionflsxtbbd'      // Aapka 16-digit App Password
-    }
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER, // Render ke variables use honge
+    pass: process.env.EMAIL_PASS  // Yahan naya App Password (uhdpydhjqbcmciny) load hoga
+  }
 });
 
 // 1. REGISTER ROUTE (User banane ke liye)
