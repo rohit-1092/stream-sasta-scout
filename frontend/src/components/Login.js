@@ -11,7 +11,7 @@ const Login = ({ onLoginSuccess, onNavigateToRegister, onNavigateToForgot }) => 
     e.preventDefault();
     try {
       // Backend route /send-otp par request
-      await axios.post('http://localhost:5000/api/auth/send-otp', { email });
+     await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/send-otp`, { email });
       alert("OTP aapki email par bhej diya gaya hai!");
       setStep(2); // Isse UI change hoga aur OTP box dikhega
     } catch (err) {
