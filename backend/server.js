@@ -1,17 +1,13 @@
 const express = require('express');
-const dotenv = require('dotenv').config();
 const cors = require('cors');
 const connectDB = require('./config/db');
-const Platform = require('./models/Platform');
-const authRoutes = require('./routes/auth'); // 1. Auth routes ko import kiya
+const authRoutes = require('./routes/auth');
 
-// Load environment variables
-dotenv.config();
-
-// Connect to Database
-connectDB();
+// Dotenv ko sahi tarike se load karein
+require('dotenv').config(); 
 
 const app = express();
+// ... baaki ka code niche ...
 
 // --- Middleware ---
 app.use(cors()); 
