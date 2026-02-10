@@ -11,7 +11,7 @@ const Login = ({ onLoginSuccess, onNavigateToRegister, onNavigateToForgot }) => 
     e.preventDefault();
     try {
       // Backend route /send-otp par request
-     await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/send-otp`, { email });
+      await axios.post('https://stream-sasta-scout.onrender.com/api/auth/send-otp', { email });
       alert("OTP aapki email par bhej diya gaya hai!");
       setStep(2); // Isse UI change hoga aur OTP box dikhega
     } catch (err) {
@@ -24,7 +24,7 @@ const Login = ({ onLoginSuccess, onNavigateToRegister, onNavigateToForgot }) => 
     e.preventDefault();
     try {
       // Backend route /verify-otp par request
-     const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/verify-otp`, { email, otp });
+     const res = await axios.post('https://stream-sasta-scout.onrender.com/api/auth/verify-otp', { email, otp });
       alert("Login Safal rha!");
       onLoginSuccess({ email }); // User ko dashboard par bhejein
     } catch (err) {
