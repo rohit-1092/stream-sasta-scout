@@ -3,19 +3,18 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-const User = require('../models/User'); // Ensure this path is correct
+const sendInBlue = require('nodemailer-sendinblue-transport'); // Naya Transport
+const User = require('../models/User');
 
-// --- Nodemailer Setup ---
-// --- Nodemailer Setup (Environment Variables ke saath) ---
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER, // Render dashboard se Jayindian10@gmail.com uthayega
-    pass: process.env.EMAIL_PASS // Render dashboard se uhdpydhjqbcmciny uthayega
-  }
-});
+// --- Updated Nodemailer Setup (Render Friendly) ---
+// Note: Ab hum 'service: gmail' use nahi karenge
+const transporter = nodemailer.createTransport(
+    new sendInBlue({
+        apiKey: process.env.BREVO_API_KEY // Render Dashboard mein ye key dalni hogi
+    })
+);
 
-// 1. REGISTER ROUTE (User banane ke liye)
+// 1. REGISTER ROUTE
 router.post('/register', async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -40,23 +39,24 @@ router.post('/send-otp', async (req, res) => {
         const user = await User.findOne({ email });
         if (!user) return res.status(400).json({ msg: "User nahi mila" });
 
-        // 6 digit random OTP generate karna
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         user.otp = otp;
-        user.otpExpires = Date.now() + 600000; // 10 minutes valid
+        user.otpExpires = Date.now() + 600000; 
         await user.save();
 
-        // Email bhejne ka logic
+        // Email bhejne ka logic (Ab block nahi hoga)
         await transporter.sendMail({
-            from: '"Sasta Scout" <jayindian10@gmail.com>', // Syntax corrected
+            from: 'jayindian10@gmail.com', // Brevo par verified email hi use karein
             to: email,
             subject: "Login Verification Code",
-            text: `Aapka Sasta Scout OTP hai: ${otp}`
+            text: `Aapka Sasta Scout OTP hai: ${otp}`,
+            html: `<b>Aapka Sasta Scout OTP hai: ${otp}</b>`
         });
 
         res.json({ msg: "OTP email par bhej diya gaya hai" });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error("Email Error:", err);
+        res.status(500).json({ error: "Email bhejane mein galti hui. Check Logs." });
     }
 });
 
@@ -66,15 +66,12 @@ router.post('/verify-otp', async (req, res) => {
     try {
         const user = await User.findOne({ email });
 
-        // OTP aur expiry check karna
         if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
             return res.status(400).json({ msg: "Invalid ya Expired OTP" });
         }
 
-        // Login ke liye JWT token banana
         const token = jwt.sign({ id: user._id }, 'SASTA_SCOUT_SECRET', { expiresIn: '24h' });
 
-        // OTP use hone ke baad clear karna
         user.otp = undefined;
         user.otpExpires = undefined;
         await user.save();
@@ -87,23 +84,20 @@ router.post('/verify-otp', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 // 4. FORGOT/RESET PASSWORD ROUTE
 router.post('/reset-password', async (req, res) => {
     const { email, otp, newPassword } = req.body;
-
     try {
         const user = await User.findOne({ email });
 
-        // OTP aur expiry check karein
         if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
             return res.status(400).json({ msg: "Invalid ya Expired OTP" });
         }
 
-        // Naye password ko hash (encrypt) karein
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(newPassword, salt);
 
-        // OTP clear karein aur save karein
         user.otp = undefined;
         user.otpExpires = undefined;
         await user.save();
