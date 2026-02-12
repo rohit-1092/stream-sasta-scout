@@ -4,87 +4,92 @@ import Header from "./Header";
 
 const Dashboard = ({ userEmail, onLogout }) => {
   const [movies, setMovies] = useState([]);
+  const [top10, setTop10] = useState([]);
   const [trailerKey, setTrailerKey] = useState(null);
+  const [movieStats, setMovieStats] = useState({}); 
 
-  // Backend URL ko variable mein store karein taaki bar-bar typing error na ho
   const BACKEND_URL = process.env.REACT_APP_API_URL;
 
-  // 1. Movies Fetch karne ke liye updated function
-  const fetchMovies = async (q = "") => {
+  const fetchData = async () => {
     try {
-      // Direct TMDB ki jagah ab hum apne Render Backend ko call karenge
-      const url = q 
-        ? `${BACKEND_URL}/api/movies/search?query=${q}` 
-        : `${BACKEND_URL}/api/movies/popular`;
-      
-      const res = await axios.get(url);
-      setMovies(res.data.results || []);
-    } catch (err) { 
-      console.error("Movies load nahi ho rahi:", err); 
-    }
+      const [pop, top] = await Promise.all([
+        axios.get(`${BACKEND_URL}/api/movies/popular`),
+        axios.get(`${BACKEND_URL}/api/movies/top10`)
+      ]);
+      setMovies(pop.data.results || []);
+      setTop10(top.data || []);
+    } catch (err) { console.error(err); }
   };
 
-  useEffect(() => { fetchMovies(); }, []);
+  useEffect(() => { fetchData(); }, []);
 
-  // 2. Trailer fetch karne ke liye fixed function
   const handlePreview = async (id) => {
     try {
-      // Yahan humne endpoint badal kar /api/movies/trailer/${id} kar diya hai
-      const res = await axios.get(`${BACKEND_URL}/api/movies/trailer/${id}`);
-      
-      // TMDB response mein 'results' array ke andar videos hote hain
-      const trailer = res.data.results.find(v => v.type === "Trailer" && v.site === "YouTube");
-      
-      if (trailer) {
-        setTrailerKey(trailer.key);
-      } else {
-        alert("Is movie ka trailer filhal available nahi hai.");
-      }
-    } catch (e) { 
-      alert("Trailer load karne mein error aaya. Kya aapne backend update kiya?"); 
-    }
+        const statsRes = await axios.post(`${BACKEND_URL}/api/movies/view/${id}`);
+        setMovieStats(prev => ({ ...prev, [id]: { ...prev[id], views: statsRes.data.views } }));
+
+        const res = await axios.get(`${BACKEND_URL}/api/movies/trailer/${id}`);
+        const trailer = res.data.results.find(v => v.type === "Trailer");
+        if (trailer) setTrailerKey(trailer.key);
+        else alert("Trailer not found!");
+    } catch (e) { console.error(e); }
+  };
+
+  const handleRate = async (id, val) => {
+    try {
+        const res = await axios.post(`${BACKEND_URL}/api/movies/rate/${id}`, { rating: val });
+        const avg = res.data.totalRating / res.data.numberOfRatings;
+        setMovieStats(prev => ({ ...prev, [id]: { ...prev[id], avg: avg, count: res.data.numberOfRatings } }));
+        alert(`Aapne ${val} stars diye!`);
+    } catch (err) { console.error(err); }
   };
 
   return (
-    <div style={{ background: "#020617", minHeight: "100vh", color: "#fff" }}>
-      <Header onSearch={fetchMovies} userEmail={userEmail} onLogout={onLogout} />
+    <div style={{ background: "#020617", minHeight: "100vh", color: "#fff", fontFamily: 'sans-serif' }}>
+      <Header onSearch={(q) => fetchData(q)} userEmail={userEmail} onLogout={onLogout} />
       
+      <div style={{ textAlign: "right", padding: "10px 30px", color: "#38bdf8", fontWeight: "bold" }}>
+         🚀 Developed by Rohit Maurya
+      </div>
+
+      {/* Top 10 Section */}
+      <div style={{ padding: "20px 30px" }}>
+        <h2 style={{ color: "#38bdf8" }}>🔥 Top 10 Trending</h2>
+        <div style={{ display: "flex", overflowX: "auto", gap: "20px", padding: "20px 0" }}>
+          {top10.map((m, i) => (
+            <img key={m.id} onClick={() => handlePreview(m.id)} src={`https://image.tmdb.org/t/p/w500${m.poster_path}`} 
+                 style={{ height: "200px", borderRadius: "10px", cursor: "pointer" }} alt="" />
+          ))}
+        </div>
+      </div>
+
       <div style={{ padding: "30px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "25px" }}>
         {movies.map(m => (
           <div key={m.id} style={{ background: "#1e293b", borderRadius: "15px", overflow: "hidden", border: "1px solid #334155" }}>
-            <img 
-              src={m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : "https://via.placeholder.com/500x750?text=No+Image"} 
-              style={{ width: "100%", height: "350px", objectFit: "cover" }} 
-              alt={m.title} 
-            />
+            <img src={`https://image.tmdb.org/t/p/w500${m.poster_path}`} style={{ width: "100%", height: "350px", objectFit: "cover" }} alt="" />
             <div style={{ padding: "15px" }}>
-              <h3 style={{ fontSize: "16px", marginBottom: "15px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.title}</h3>
-              <button 
-                onClick={() => handlePreview(m.id)} 
-                style={{ width: "100%", padding: "12px", background: "#38bdf8", border: "none", borderRadius: "8px", color: "#000", fontWeight: "bold", cursor: "pointer" }}
-              >
-                🥽 VR PREVIEW
-              </button>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <h3 style={{ fontSize: "16px" }}>{m.title}</h3>
+                <span style={{ fontSize: "12px", color: "#94a3b8" }}>👁️ {movieStats[m.id]?.views || 0}</span>
+              </div>
+
+              {/* Rating Stars */}
+              <div style={{ margin: "10px 0" }}>
+                {[1,2,3,4,5].map(s => (
+                  <span key={s} onClick={() => handleRate(m.id, s)} style={{ cursor: "pointer", color: s <= (movieStats[m.id]?.avg || 0) ? "#ffb703" : "#444" }}>★</span>
+                ))}
+              </div>
+
+              <button onClick={() => handlePreview(m.id)} style={{ width: "100%", padding: "12px", background: "#38bdf8", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}>🥽 VR PREVIEW</button>
             </div>
           </div>
         ))}
       </div>
 
-      {/* FULL SCREEN CINEMATIC TRAILER MODAL */}
       {trailerKey && (
-        <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "#000", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999 }}>
-          <button 
-            onClick={() => setTrailerKey(null)} 
-            style={{ position: "fixed", top: "30px", right: "30px", background: "#ef4444", color: "white", border: "none", padding: "15px 25px", borderRadius: "50px", cursor: "pointer", fontWeight: "bold", zIndex: 10000 }}
-          >
-            EXIT ✖
-          </button>
-          <iframe 
-            width="100%" height="100%" 
-            src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&rel=0&modestbranding=1`} 
-            frameBorder="0" allow="autoplay; encrypted-media; fullscreen" 
-            allowFullScreen title="Movie Trailer" style={{ border: "none" }}
-          ></iframe>
+        <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "#000", zIndex: 9999 }}>
+          <button onClick={() => setTrailerKey(null)} style={{ position: "fixed", top: "20px", right: "20px", padding: "10px", background: "red", color: "#fff" }}>EXIT ✖</button>
+          <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`} frameBorder="0" allowFullScreen></iframe>
         </div>
       )}
     </div>
