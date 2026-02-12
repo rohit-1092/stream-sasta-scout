@@ -9,21 +9,19 @@ const Register = ({ onNavigateToLogin }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-     const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/register`, user);
-      alert(res.data.msg);
-      onNavigateToLogin(); 
-    } catch (err) {
-      const errorMsg = err.response?.data?.msg || "Server Error";
-      alert("Registration: " + errorMsg);
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/register`, user);
       
-      // Agar user pehle se register hai, toh turant Login par bhejein
-      if (errorMsg === "User already exists") {
-        onNavigateToLogin ? onNavigateToLogin() : navigate('/login');
-      }
+      // Initials ke liye data save karein
+      localStorage.setItem('user', JSON.stringify({ name: user.name, email: user.email }));
+      
+      alert(res.data.msg || "Registration Safal!");
+      onNavigateToLogin ? onNavigateToLogin() : navigate('/login');
+    } catch (err) {
+      alert("Error: " + (err.response?.data?.msg || "Server Error"));
     }
   };
 
-  const inputStyle = { display: 'block', width: '100%', padding: '12px', marginBottom: '15px', borderRadius: '8px', border: '1px solid #334155', background: '#0f172a', color: 'white', boxSizing: 'border-box' };
+  const inputStyle = { display: 'block', width: '100%', padding: '12px', marginBottom: '15px', borderRadius: '8px', border: '1px solid #334155', background: '#0f172a', color: 'white' };
   const buttonStyle = { width: '100%', padding: '12px', background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' };
 
   return (
@@ -36,9 +34,7 @@ const Register = ({ onNavigateToLogin }) => {
           <input style={inputStyle} type="password" placeholder="Password" onChange={(e) => setUser({...user, password: e.target.value})} required />
           <button type="submit" style={buttonStyle}>Register</button>
         </form>
-        <p onClick={onNavigateToLogin} style={{ marginTop: '20px', color: '#94a3b8', fontSize: '14px', cursor: 'pointer' }}>
-          Already have an account? <span style={{ color: '#38bdf8' }}>Login</span>
-        </p>
+        <p onClick={onNavigateToLogin} style={{ marginTop: '20px', color: '#94a3b8', cursor: 'pointer' }}>Login here</p>
       </div>
     </div>
   );

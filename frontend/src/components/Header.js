@@ -1,73 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import { IoSearch } from "react-icons/io5"; // npm install react-icons zaroor karein
+import { IoSearch } from "react-icons/io5";
 import './Header.css';
 
-const Header = () => {
+const Header = ({ onLogout }) => {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [initials, setInitials] = useState('??');
 
-    const API_KEY = 'e8bb53615fb9f3fd95d776ecb199bb5'; // Apni TMDB API key yahan dalein
+    const API_KEY = 'e8bb53615fb9f3fd95d776ecb199bb5';
 
     useEffect(() => {
-        if (query.length > 0) {
-            const fetchMovies = async () => {
-                try {
-                    const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${query}`);
-                    const data = await res.json();
-                    setResults(data.results?.slice(0, 5) || []); // Sirf top 5 results dikhayenge
-                    setShowDropdown(true);
-                } catch (err) {
-                    console.error("Search Error:", err);
-                }
-            };
-
-            const timeoutId = setTimeout(fetchMovies, 500);
-            return () => clearTimeout(timeoutId);
-        } else {
-            setResults([]);
-            setShowDropdown(false);
+        const storedUser = JSON.parse(localStorage.getItem('user'));
+        if (storedUser && storedUser.name) {
+            const nameParts = storedUser.name.trim().split(' ');
+            const res = nameParts.length > 1 ? (nameParts[0][0] + nameParts[nameParts.length-1][0]) : nameParts[0].substring(0, 2);
+            setInitials(res.toUpperCase());
         }
-    }, [query]);
+    }, []);
+
+    const handleLogoutClick = () => {
+        localStorage.removeItem('user'); // Data saaf karein
+        onLogout(); // Dashboard ka logout function chalayein
+    };
 
     return (
         <header className="header-container">
             <div className="logo-text">STREAM SASTA SCOUT</div>
-
             <div className="search-wrapper">
                 <form className="search-form" onSubmit={(e) => e.preventDefault()}>
-                    <input 
-                        type="text" 
-                        placeholder="Search movies..." 
-                        className="search-input"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-                        onFocus={() => query.length > 0 && setShowDropdown(true)}
-                    />
-                    <button type="submit" className="search-button">
-                        <IoSearch size={20} />
-                    </button>
+                    <input type="text" className="search-input" placeholder="Search..." value={query} onChange={(e) => setQuery(e.target.value)} onBlur={() => setTimeout(() => setShowDropdown(false), 200)} onFocus={() => query.length > 0 && setShowDropdown(true)} />
+                    <button type="submit" className="search-button"><IoSearch size={20} /></button>
                 </form>
-
-                {showDropdown && results.length > 0 && (
-                    <div className="search-results-dropdown">
-                        {results.map(movie => (
-                            <div key={movie.id} className="result-item">
-                                <img src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`} alt="" />
-                                <span>{movie.title}</span>
-                            </div>
-                        ))}
+                {/* Result dropdown mapping yahan... */}
+            </div>
+            <div className="profile-section">
+                <div className="profile-circle" onClick={() => setShowProfileMenu(!showProfileMenu)}>{initials}</div>
+                {showProfileMenu && (
+                    <div className="dropdown-menu">
+                        <button className="dropdown-item" onClick={handleLogoutClick}>Logout</button>
                     </div>
                 )}
-            </div>
-
-            <div className="profile-section">
-                <span className="dev-credit">Developed by Rohit Maurya</span>
-                <div className="profile-circle">R</div>
             </div>
         </header>
     );
 };
-
 export default Header;

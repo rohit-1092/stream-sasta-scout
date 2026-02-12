@@ -48,10 +48,6 @@ const Dashboard = ({ userEmail, onLogout }) => {
     <div style={{ background: "#020617", minHeight: "100vh", color: "#fff", fontFamily: 'sans-serif' }}>
       <Header onSearch={(q) => fetchData(q)} userEmail={userEmail} onLogout={onLogout} />
       
-      {/* <div style={{ textAlign: "right", padding: "10px 30px", color: "#38bdf8", fontWeight: "bold" }}>
-         🚀 Developed by Rohit Maurya
-      </div> */}
-
       {/* Top 10 Section */}
       <div style={{ padding: "20px 30px" }}>
         <h2 style={{ color: "#38bdf8" }}>🔥 Top 10 Trending</h2>

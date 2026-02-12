@@ -51,3 +51,27 @@
     display: flex; align-items: center; justify-content: center; font-weight: bold;
     border: 2px solid white;
 }
+.dropdown-menu {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    width: 120px;
+    z-index: 3000;
+}
+
+.dropdown-item {
+    width: 100%;
+    padding: 10px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    text-align: center;
+}
+
+.dropdown-item:hover {
+    background: #334155;
+}
