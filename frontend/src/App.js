@@ -6,11 +6,12 @@ import Dashboard from "./components/Dashboard";
 import ForgotPassword from "./components/ForgotPassword";
 
 function App() {
-  const [step, setStep] = useState("login"); // Default step login rakha hai persistence check ke liye
+  // Default step ko pehle khali rakhenge persistence check ke liye
+  const [step, setStep] = useState("loading"); 
   const [user, setUser] = useState(null);
 
-  // 1. App load hote hi check karein ki kya koi user pehle se logged in hai
   useEffect(() => {
+    // Check karein ki kya user pehle se logged in hai
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
       try {
@@ -20,25 +21,33 @@ function App() {
       } catch (error) {
         console.error("LocalStorage data error:", error);
         localStorage.removeItem("user");
+        setStep("register"); // Agar data corrupt ho toh register par bhejien
       }
+    } else {
+      setStep("register"); // Naye device/user ke liye pehle register aayega
     }
   }, []);
+
+  // Jab tak check ho raha hai, tab tak ek simple loading background dikhayein
+  if (step === "loading") {
+    return <div style={{ minHeight: '100vh', background: '#0f172a' }}></div>;
+  }
 
   return (
     <Router>
       <div className="App" style={{ minHeight: '100vh', background: '#0f172a' }}>
         
-        {/* Registration Screen */}
+        {/* 1. Registration Screen - Pehle yahi aayega */}
         {step === "register" && (
           <Register onNavigateToLogin={() => setStep("login")} />
         )}
 
-        {/* Login Screen - Login success par data save hota hai */}
+        {/* 2. Login Screen */}
         {step === "login" && (
           <Login 
             onLoginSuccess={(u) => {
               setUser(u);
-              localStorage.setItem("user", JSON.stringify(u)); // Browser mein user data save karein
+              localStorage.setItem("user", JSON.stringify(u)); // Data persistence ke liye
               setStep("dashboard");
             }} 
             onNavigateToRegister={() => setStep("register")}
@@ -46,18 +55,18 @@ function App() {
           />
         )}
 
-        {/* Forgot Password Screen */}
+        {/* 3. Forgot Password Screen */}
         {step === "forgot" && (
           <ForgotPassword onNavigateToLogin={() => setStep("login")} />
         )}
 
-        {/* Dashboard - Logout par data remove hota hai */}
-        {step === "dashboard" && (
+        {/* 4. Dashboard Screen */}
+        {step === "dashboard" && user && (
           <Dashboard 
-            userEmail={user?.email} 
+            userEmail={user.email} 
             onLogout={() => {
               setUser(null);
-              localStorage.removeItem("user"); // Browser se data delete karein
+              localStorage.removeItem("user"); // Logout par data clear karein
               setStep("login");
             }} 
           />

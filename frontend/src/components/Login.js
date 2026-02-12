@@ -6,10 +6,13 @@ const Login = ({ onLoginSuccess, onNavigateToRegister, onNavigateToForgot }) => 
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState(1);
 
+  // Dynamic Backend URL Fix
+  const BACKEND_URL = process.env.REACT_APP_API_URL || 'https://stream-sasta-scout.onrender.com';
+
   const sendOtp = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('https://stream-sasta-scout.onrender.com/api/auth/send-otp', { email });
+      await axios.post(`${BACKEND_URL}/api/auth/send-otp`, { email });
       alert("OTP aapki email par bhej diya gaya hai!");
       setStep(2);
     } catch (err) {
@@ -20,7 +23,7 @@ const Login = ({ onLoginSuccess, onNavigateToRegister, onNavigateToForgot }) => 
   const verifyOtp = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('https://stream-sasta-scout.onrender.com/api/auth/verify-otp', { email, otp });
+      const res = await axios.post(`${BACKEND_URL}/api/auth/verify-otp`, { email, otp });
       
       // Initials ke liye data save karna
       const userData = {
@@ -38,11 +41,13 @@ const Login = ({ onLoginSuccess, onNavigateToRegister, onNavigateToForgot }) => 
 
   const inputStyle = { display: 'block', width: '100%', padding: '12px', marginBottom: '15px', borderRadius: '8px', border: '1px solid #334155', background: '#0f172a', color: 'white', boxSizing: 'border-box' };
   const buttonStyle = { width: '100%', padding: '12px', background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' };
+  const linkStyle = { color: '#94a3b8', cursor: 'pointer', fontSize: '14px', marginTop: '10px', display: 'inline-block' };
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#0f172a' }}>
       <div style={{ background: '#1e293b', padding: '40px', borderRadius: '12px', width: '100%', maxWidth: '400px', textAlign: 'center' }}>
         <h2 style={{ color: '#38bdf8', marginBottom: '25px' }}>{step === 1 ? 'Login' : 'Enter OTP'}</h2>
+        
         {step === 1 ? (
           <form onSubmit={sendOtp}>
             <input style={inputStyle} type="email" placeholder="Email daalein" value={email} onChange={(e) => setEmail(e.target.value)} required />
@@ -54,7 +59,17 @@ const Login = ({ onLoginSuccess, onNavigateToRegister, onNavigateToForgot }) => 
             <button type="submit" style={buttonStyle}>Verify & Login</button>
           </form>
         )}
-        <p onClick={onNavigateToRegister} style={{ color: '#94a3b8', cursor: 'pointer', marginTop: '20px' }}>Account nahi hai? <span style={{color:'#38bdf8'}}>Register</span></p>
+
+        {/* --- NAYA: Forgot Password Link --- */}
+        <div style={{ marginTop: '15px' }}>
+          <span onClick={onNavigateToForgot} style={linkStyle}>
+            Forgot Password?
+          </span>
+        </div>
+
+        <p onClick={onNavigateToRegister} style={{ color: '#94a3b8', cursor: 'pointer', marginTop: '20px' }}>
+          Account nahi hai? <span style={{color:'#38bdf8'}}>Register</span>
+        </p>
       </div>
     </div>
   );
