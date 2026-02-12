@@ -1,44 +1,21 @@
-/* Purana sara code delete kar dein */
-body {
-  background-color: #0f172a !important;
-  color: white !important;
-  margin: 0;
-  padding: 0;
+/* Movie Card Styles */
+.movie-card {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    margin: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
 }
 
-.login-container {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  min-height: 100vh !important;
-  width: 100% !important;
+.movie-card:hover {
+    transform: scale(1.1);
+    z-index: 50;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.8);
 }
 
-.login-card {
-  background: #1e293b !important;
-  padding: 30px !important;
-  border-radius: 10px !important;
-  width: 350px !important;
-  display: block !important; /* Force block to stack items */
-}
-
-/* Isse inputs ek ke niche ek aayenge */
-input {
-  display: block !important;
-  width: 100% !important;
-  padding: 12px !important;
-  margin-bottom: 20px !important;
-  border-radius: 5px !important;
-  border: 1px solid #334155 !important;
-  background: #0f172a !important;
-  color: white !important;
-}
-
-button {
-  width: 100% !important;
-  padding: 12px !important;
-  background: #38bdf8 !important;
-  border: none !important;
-  cursor: pointer !important;
-  font-weight: bold !important;
+.movie-card img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
 }
