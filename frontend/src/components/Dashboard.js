@@ -8,17 +8,27 @@ const Dashboard = ({ userEmail, onLogout }) => {
   const [trailerKey, setTrailerKey] = useState(null);
   const [movieStats, setMovieStats] = useState({}); 
 
-  const BACKEND_URL = process.env.REACT_APP_API_URL;
+  // --- Backend URL Fix ---
+  // Agar .env file read nahi hoti, toh ye seedha Onrender URL uthayega
+  const BACKEND_URL = process.env.REACT_APP_API_URL || "https://stream-sasta-scout.onrender.com";
 
-  const fetchData = async () => {
+  const fetchData = async (query = "") => {
     try {
-      const [pop, top] = await Promise.all([
-        axios.get(`${BACKEND_URL}/api/movies/popular`),
-        axios.get(`${BACKEND_URL}/api/movies/top10`)
-      ]);
-      setMovies(pop.data.results || []);
-      setTop10(top.data || []);
-    } catch (err) { console.error(err); }
+      // Search logic aur trending logic ko merge kiya hai
+      if (query) {
+        const res = await axios.get(`${BACKEND_URL}/api/movies/search?q=${query}`);
+        setMovies(res.data.results || []);
+      } else {
+        const [pop, top] = await Promise.all([
+          axios.get(`${BACKEND_URL}/api/movies/popular`),
+          axios.get(`${BACKEND_URL}/api/movies/top10`)
+        ]);
+        setMovies(pop.data.results || []);
+        setTop10(top.data || []);
+      }
+    } catch (err) { 
+      console.error("Content Fetch Error:", err); 
+    }
   };
 
   useEffect(() => { fetchData(); }, []);
@@ -46,21 +56,27 @@ const Dashboard = ({ userEmail, onLogout }) => {
 
   return (
     <div style={{ background: "#020617", minHeight: "100vh", color: "#fff", fontFamily: 'sans-serif' }}>
+      {/* Search query pass karne ke liye fetchData update kiya hai */}
       <Header onSearch={(q) => fetchData(q)} userEmail={userEmail} onLogout={onLogout} />
       
       {/* Top 10 Section */}
       <div style={{ padding: "20px 30px" }}>
         <h2 style={{ color: "#38bdf8" }}>🔥 Top 10 Trending</h2>
         <div style={{ display: "flex", overflowX: "auto", gap: "20px", padding: "20px 0" }}>
-          {top10.map((m, i) => (
-            <img key={m.id} onClick={() => handlePreview(m.id)} src={`https://image.tmdb.org/t/p/w500${m.poster_path}`} 
-                 style={{ height: "200px", borderRadius: "10px", cursor: "pointer" }} alt="" />
-          ))}
+          {top10.length > 0 ? top10.map((m, i) => (
+            <img 
+                 key={m.id} 
+                 onClick={() => handlePreview(m.id)} 
+                 src={`https://image.tmdb.org/t/p/w500${m.poster_path}`} 
+                 style={{ height: "200px", borderRadius: "10px", cursor: "pointer" }} 
+                 alt={m.title} 
+            />
+          )) : <p style={{color: "#94a3b8"}}>Loading Trending Movies...</p>}
         </div>
       </div>
 
       <div style={{ padding: "30px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "25px" }}>
-        {movies.map(m => (
+        {movies.length > 0 ? movies.map(m => (
           <div key={m.id} style={{ background: "#1e293b", borderRadius: "15px", overflow: "hidden", border: "1px solid #334155" }}>
             <img src={`https://image.tmdb.org/t/p/w500${m.poster_path}`} style={{ width: "100%", height: "350px", objectFit: "cover" }} alt="" />
             <div style={{ padding: "15px" }}>
@@ -79,13 +95,13 @@ const Dashboard = ({ userEmail, onLogout }) => {
               <button onClick={() => handlePreview(m.id)} style={{ width: "100%", padding: "12px", background: "#38bdf8", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}>🥽 VR PREVIEW</button>
             </div>
           </div>
-        ))}
+        )) : <p style={{textAlign: "center", width: "100%"}}>Movies load ho rahi hain...</p>}
       </div>
 
       {trailerKey && (
         <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "#000", zIndex: 9999 }}>
-          <button onClick={() => setTrailerKey(null)} style={{ position: "fixed", top: "20px", right: "20px", padding: "10px", background: "red", color: "#fff" }}>EXIT ✖</button>
-          <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`} frameBorder="0" allowFullScreen></iframe>
+          <button onClick={() => setTrailerKey(null)} style={{ position: "fixed", top: "20px", right: "20px", padding: "10px", background: "red", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer" }}>EXIT ✖</button>
+          <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`} frameBorder="0" allowFullScreen title="trailer"></iframe>
         </div>
       )}
     </div>
