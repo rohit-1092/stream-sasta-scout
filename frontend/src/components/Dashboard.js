@@ -13,23 +13,23 @@ const Dashboard = ({ userEmail, onLogout }) => {
   const BACKEND_URL = process.env.REACT_APP_API_URL || "https://stream-sasta-scout.onrender.com";
 
   const fetchData = async (query = "") => {
-    try {
-      // Search logic aur trending logic ko merge kiya hai
-      if (query) {
-        const res = await axios.get(`${BACKEND_URL}/api/movies/search?q=${query}`);
-        setMovies(res.data.results || []);
-      } else {
-        const [pop, top] = await Promise.all([
-          axios.get(`${BACKEND_URL}/api/movies/popular`),
-          axios.get(`${BACKEND_URL}/api/movies/top10`)
-        ]);
-        setMovies(pop.data.results || []);
-        setTop10(top.data || []);
-      }
-    } catch (err) { 
-      console.error("Content Fetch Error:", err); 
+  try {
+    if (query) {
+      // Backend route aur parameter check karein
+      const res = await axios.get(`${BACKEND_URL}/api/movies/search?query=${query}`);
+      setMovies(res.data.results || res.data || []); 
+    } else {
+      const [pop, top] = await Promise.all([
+        axios.get(`${BACKEND_URL}/api/movies/popular`),
+        axios.get(`${BACKEND_URL}/api/movies/top10`)
+      ]);
+      setMovies(pop.data.results || pop.data || []);
+      setTop10(top.data.results || top.data || []);
     }
-  };
+  } catch (err) {
+    console.error("Content Fetch Error:", err);
+  }
+};
 
   useEffect(() => { fetchData(); }, []);
 
