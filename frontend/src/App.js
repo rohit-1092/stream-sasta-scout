@@ -2,16 +2,14 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import Register from "./components/Register";
 import Login from "./components/Login";
-import Dashboard from "./components/Dashboard";
+import Dashboard from "./components/Dashboard"; // Main changes Dashboard file mein honge
 import ForgotPassword from "./components/ForgotPassword";
 
 function App() {
-  // Default step ko pehle khali rakhenge persistence check ke liye
   const [step, setStep] = useState("loading"); 
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Check karein ki kya user pehle se logged in hai
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
       try {
@@ -21,33 +19,31 @@ function App() {
       } catch (error) {
         console.error("LocalStorage data error:", error);
         localStorage.removeItem("user");
-        setStep("register"); // Agar data corrupt ho toh register par bhejien
+        setStep("register");
       }
     } else {
-      setStep("register"); // Naye device/user ke liye pehle register aayega
+      setStep("register");
     }
   }, []);
 
-  // Jab tak check ho raha hai, tab tak ek simple loading background dikhayein
   if (step === "loading") {
-    return <div style={{ minHeight: '100vh', background: '#0f172a' }}></div>;
+    return <div className="min-h-screen bg-[#0f1014]"></div>;
   }
 
   return (
     <Router>
-      <div className="App" style={{ minHeight: '100vh', background: '#0f172a' }}>
+      {/* Background color Hotstar wala set kiya hai */}
+      <div className="App min-h-screen bg-[#0f1014] text-white">
         
-        {/* 1. Registration Screen - Pehle yahi aayega */}
         {step === "register" && (
           <Register onNavigateToLogin={() => setStep("login")} />
         )}
 
-        {/* 2. Login Screen */}
         {step === "login" && (
           <Login 
             onLoginSuccess={(u) => {
               setUser(u);
-              localStorage.setItem("user", JSON.stringify(u)); // Data persistence ke liye
+              localStorage.setItem("user", JSON.stringify(u));
               setStep("dashboard");
             }} 
             onNavigateToRegister={() => setStep("register")}
@@ -55,18 +51,17 @@ function App() {
           />
         )}
 
-        {/* 3. Forgot Password Screen */}
         {step === "forgot" && (
           <ForgotPassword onNavigateToLogin={() => setStep("login")} />
         )}
 
-        {/* 4. Dashboard Screen */}
+        {/* Yahan Dashboard load ho raha hai jab user login hai */}
         {step === "dashboard" && user && (
           <Dashboard 
             userEmail={user.email} 
             onLogout={() => {
               setUser(null);
-              localStorage.removeItem("user"); // Logout par data clear karein
+              localStorage.removeItem("user");
               setStep("login");
             }} 
           />

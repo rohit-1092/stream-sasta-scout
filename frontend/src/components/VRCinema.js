@@ -4,35 +4,42 @@ import { Html, OrbitControls, PerspectiveCamera, Environment } from '@react-thre
 
 const VRCinema = ({ videoId, onClose, movieTitle }) => {
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 2000, background: '#000' }}>
-      <Canvas shadows>
-        <Suspense fallback={null}>
-          <PerspectiveCamera makeDefault position={[0, 0, 10]} />
+    <div className="fixed inset-0 w-full h-full z-[3000] bg-black overflow-hidden">
+      <Canvas shadows dpr={[1, 2]}>
+        <Suspense fallback={<Html center><div className="text-white animate-pulse text-xl">Entering Cinema Hall...</div></Html>}>
+          <PerspectiveCamera makeDefault position={[0, 0, 12]} fov={50} />
+          
           <OrbitControls 
             enablePan={false} 
-            maxPolarAngle={Math.PI / 2} 
-            minDistance={5} 
-            maxDistance={15} 
+            maxPolarAngle={Math.PI / 1.8} 
+            minDistance={6} 
+            maxDistance={14} 
+            rotateSpeed={0.5}
           />
 
-          {/* Hall ki Lights */}
-          <ambientLight intensity={0.2} />
-          <spotLight position={[0, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
+          <ambientLight intensity={0.3} />
+          <spotLight position={[0, 15, 10]} angle={0.3} penumbra={1} intensity={1.5} castShadow />
 
-          {/* 3D Hall: Diwaarein (Walls) */}
-          <mesh position={[0, 2, -5]}>
-            <boxGeometry args={[20, 10, 0.5]} />
-            <meshStandardMaterial color="#111" />
+          {/* 3D Wall */}
+          <mesh position={[0, 2, -6]}>
+            <boxGeometry args={[25, 15, 0.5]} />
+            <meshStandardMaterial color="#0a0a0a" />
           </mesh>
 
-          {/* Cinema Screen (The Main Focus) */}
-          <mesh position={[0, 2, -4.7]}>
-            <planeGeometry args={[12, 6.75]} />
-            <Html transform occlude distanceFactor={10} position={[0, 0, 0.1]}>
-              <div style={{ width: '1200px', height: '675px', background: '#000', border: '5px solid #222' }}>
+          {/* Responsive Cinema Screen */}
+          <mesh position={[0, 2, -5.7]}>
+            <planeGeometry args={[14, 7.8]} />
+            <Html 
+              transform 
+              occlude 
+              distanceFactor={window.innerWidth < 768 ? 12 : 10} 
+              position={[0, 0, 0.1]}
+            >
+              <div className="bg-black border-[6px] border-[#1f1f1f] shadow-2xl overflow-hidden" 
+                   style={{ width: '1280px', height: '720px' }}>
                 <iframe
                   width="100%" height="100%"
-                  src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&controls=0`}
+                  src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&controls=1&modestbranding=1`}
                   title={movieTitle}
                   frameBorder="0"
                   allow="autoplay; encrypted-media"
@@ -41,17 +48,17 @@ const VRCinema = ({ videoId, onClose, movieTitle }) => {
             </Html>
           </mesh>
 
-          {/* Floor with Realistic Reflection */}
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -3, 0]} receiveShadow>
-            <planeGeometry args={[50, 50]} />
-            <meshStandardMaterial color="#050505" roughness={0.1} metalness={0.5} />
+          {/* Floor */}
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -4, 0]} receiveShadow>
+            <planeGeometry args={[60, 60]} />
+            <meshStandardMaterial color="#030303" roughness={0.05} metalness={0.8} />
           </mesh>
 
-          {/* Virtual Seats (Hum dabbo ka use karenge seats dikhane ke liye) */}
-          {[ -4, -2, 0, 2, 4 ].map((x) => (
-            <mesh key={x} position={[x, -2.5, 5]} castShadow>
-              <boxGeometry args={[1.5, 1, 1]} />
-              <meshStandardMaterial color="#441111" />
+          {/* Virtual Seats */}
+          {[ -6, -3, 0, 3, 6 ].map((x) => (
+            <mesh key={x} position={[x, -3.5, 6]} castShadow>
+              <boxGeometry args={[1.8, 1.2, 1.2]} />
+              <meshStandardMaterial color="#2d0a0a" roughness={0.8} />
             </mesh>
           ))}
 
@@ -59,17 +66,17 @@ const VRCinema = ({ videoId, onClose, movieTitle }) => {
         </Suspense>
       </Canvas>
 
-      {/* UI Elements */}
-      <div style={{ position: 'absolute', bottom: '30px', left: '50%', transform: 'translateX(-50%)', textAlign: 'center', color: 'white', pointerEvents: 'none' }}>
-        <h2 style={{ margin: 0 }}>{movieTitle}</h2>
-        <p style={{ opacity: 0.7 }}>Screen ko rotate karke hall dekhein</p>
+      {/* UI Overlay */}
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-center pointer-events-none w-full px-4">
+        <h2 className="text-white text-xl md:text-3xl font-bold drop-shadow-lg mb-1">{movieTitle}</h2>
+        <p className="text-gray-400 text-sm md:text-base italic">Drag screen to look around the hall</p>
       </div>
 
       <button 
         onClick={onClose}
-        style={{ position: 'absolute', top: '20px', right: '20px', padding: '12px 30px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '50px', cursor: 'pointer', fontWeight: 'bold' }}
+        className="absolute top-6 right-6 px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-full font-bold shadow-xl transition-all z-[3001] active:scale-95"
       >
-        Cinema se Bahar Niklein
+        Exit Cinema ✖
       </button>
     </div>
   );
